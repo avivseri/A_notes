@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A-notes</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/vs2015.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/googlecode.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/sql.min.js"></script>
     <style>
@@ -174,19 +174,43 @@
             margin-bottom: -1px;
         }
 
-        #sql-editor {
+        #sql-container {
+            position: relative;
             display: none;
             width: 98%;
+        }
+
+        #sql-editor {
+            width: 100%;
             min-height: 400px;
             padding: 1rem;
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 14px;
             line-height: 1.5;
-            background: #f8f9ff;
+            background: transparent;
             border: 1px solid var(--border-color);
             border-radius: 0 4px 4px 4px;
             resize: vertical;
+            position: relative;
+            z-index: 1;
+            color: transparent;
+            caret-color: black;
         }
+
+        #sql-highlight {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            width: 100%;
+            min-height: 400px;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #f8f9ff;
+            border: 1px solid var(--border-color);
+            border-radius: 0 4px 4px 4px;
+       }
 
         #note-input {
             border-radius: 0 4px 4px 4px;
@@ -227,7 +251,10 @@
             <div class="editor-tab" id="sqlTab">SQL</div>
         </div>
         <textarea id="note-input" rows="40" style="width: 98%;" placeholder="Write your note here..."></textarea>
-        <textarea id="sql-editor" spellcheck="false" placeholder="Write your SQL query here..."></textarea>
+        <div id="sql-container">
+            <pre id="sql-highlight" class="hljs language-sql"></pre>
+            <textarea id="sql-editor" spellcheck="false" placeholder="Write your SQL query here..."></textarea>
+        </div>
         <div>
             <label for="fontSelector">Font:</label>
             <select id="fontSelector">
@@ -459,7 +486,9 @@
         const regularTab = document.getElementById('regularTab');
         const sqlTab = document.getElementById('sqlTab');
         const regularEditor = document.getElementById('note-input');
+        const sqlContainer = document.getElementById('sql-container');
         const sqlEditor = document.getElementById('sql-editor');
+        const sqlHighlight = document.getElementById('sql-highlight');
         let currentMode = 'regular';
 
         // Initialize highlight.js
@@ -476,7 +505,7 @@
                 regularTab.classList.add('active');
                 sqlTab.classList.remove('active');
                 regularEditor.style.display = 'block';
-                sqlEditor.style.display = 'none';
+                sqlContainer.style.display = 'none';
                 
                 if (sqlEditor.value) {
                     regularEditor.value = sqlEditor.value;
@@ -486,7 +515,7 @@
                 regularTab.classList.remove('active');
                 sqlTab.classList.add('active');
                 regularEditor.style.display = 'none';
-                sqlEditor.style.display = 'block';
+                sqlContainer.style.display = 'block';
                 
                 if (regularEditor.value) {
                     sqlEditor.value = regularEditor.value;
@@ -498,10 +527,13 @@
 
         // SQL syntax highlighting
         sqlEditor.addEventListener('input', highlightSQL);
+        sqlEditor.addEventListener('scroll', () => {
+            sqlHighlight.scrollTop = sqlEditor.scrollTop;
+        });
 
         function highlightSQL() {
-            const sql = sqlEditor.value;
-            hljs.highlightElement(sqlEditor);
+            sqlHighlight.textContent = sqlEditor.value;
+            hljs.highlightElement(sqlHighlight);
         }
     </script>
 </body>
